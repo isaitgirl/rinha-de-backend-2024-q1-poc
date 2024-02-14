@@ -1,0 +1,4 @@
+app
+app-amd64
+run*.sh
+log/*.log

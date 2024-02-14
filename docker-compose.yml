@@ -1,0 +1,79 @@
+version: "3"
+services:
+  app:
+    container_name: app
+    build:
+      context: ./app
+      dockerfile: dist/build/Dockerfile
+    environment:
+      - APP_DRYRUN=false
+      - APP_ENVIRONMENT=dev
+      - APP_LOG_FILE=/app/log/app.log
+      - APP_LOG_LEVEL=info
+      - APP_ETCD_HOST=etcd
+      - APP_ETCD_PORT=2379
+      #- APP_INFLUXDB2_HOST=influxdb2
+      - APP_INFLUXDB2_HOST=192.168.1.2
+      - APP_INFLUXDB2_PORT=8086
+      - APP_INFLUXDB2_TOKEN=ac9356d07678c0e4815f2771cacbbda6750bf5cd
+      - APP_INFLUXDB2_ORG=rinha
+      - APP_INFLUXDB2_BUCKET=rinha
+      - APP_HTTP_HOST=
+      - APP_HTTP_PORT=8080
+    volumes:
+      - ./volumes/app/log:/app/log
+    ports:
+      - "8080:8080"
+      - "9999:8080"
+    networks:
+      - container-net
+  etcd:
+    container_name: etcd
+    image: bitnami/etcd:latest
+    environment:
+    - ALLOW_NONE_AUTHENTICATION=yes
+    #volumes:
+    #  - ./volumes/etcd:/etcd-data
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    networks:
+      - container-net
+  #influxdb2:
+  #  container_name: influxdb2
+  #  image: influxdb:2.7.5
+  #  environment:
+  #  - DOCKER_INFLUXDB_INIT_MODE=setup
+  #  - DOCKER_INFLUXDB_INIT_USERNAME=rinha-user
+  #  - DOCKER_INFLUXDB_INIT_PASSWORD=rinha-pass
+  #  - DOCKER_INFLUXDB_INIT_ORG=rinha
+  #  - DOCKER_INFLUXDB_INIT_BUCKET=rinha
+  #  - DOCKER_INFLUXDB_INIT_RETENTION=1w
+  #  - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=ac9356d07678c0e4815f2771cacbbda6750bf5cd
+  #  - INFLUXD_FLUX_LOG_ENABLED=false
+  #  - INFLUXD_LOG_LEVEL=info
+  #  - INFLUXD_HTTP_IDLE_TIMEOUT=0
+  #  - INFLUXD_METRICS_DISABLED=true
+  #  - INFLUXD_STORAGE_WAL_FSYNC_DELAY=5s
+  #  #- INFLUXD_QUERY_INITIAL_MEMORY_BYTES=10485760
+  #  #- INFLUXD_QUERY_MEMORY_BYTES=20485760
+  #  #volumes:
+  #  #  - ./volumes/influxdb2:/var/lib/influxdb2
+  #  ports:
+  #    - "8086:8086"
+  #  networks:
+  #    - container-net
+  haproxy:
+    container_name: haproxy
+    image: haproxy:2.9
+    ports:
+      - "9998:9999"
+    networks:
+      - container-net
+networks:
+  container-net:
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.33.67.0/24"
+
